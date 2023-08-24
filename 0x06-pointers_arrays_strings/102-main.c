@@ -1,11 +1,21 @@
-Add one line to this code, so that the program prints a[2] = 98, followed by a new line.
+#include "main.h"
 
-You are not allowed to use the variable a in your new line of code
-You are not allowed to modify the variable p
-You can only write one statement
-You are not allowed to use ,
-You are not allowed to code anything else than the line of expected line of code at the expected line
-Your code should be written at line 19, before the ;
-Do not remove anything from the initial code (not even the comments)
-and don’t change anything but the line of code you are adding (don’t change the spaces to tabs!)
-You are allowed to use the standard library
+/**
+ * main - check the code
+ *
+ * Return: Always 0.
+ */
+int main(void)
+{
+    print_number(98);
+    _putchar('\n');
+    print_number(402);
+    _putchar('\n');
+    print_number(1024);
+    _putchar('\n');
+    print_number(0);
+    _putchar('\n');
+    print_number(-98);
+    _putchar('\n');
+    return (0);
+}
