@@ -1,72 +1,84 @@
-#include "main.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+
+#define BUFFER_SIZE 1024
 
 /**
- * error_file - checks if files can be opened.
- * @file_from: file_from.
- * @file_to: file_to.
- * @argv: arguments vector.
- * Return: no return.
+ * print_error - Print an error message to stderr and exit.
+ * @code: The exit code.
+ * @msg: The error message.
  */
-void error_file(int file_from, int file_to, char *argv[])
+void print_error(int code, const char *msg)
 {
-	if (file_from == -1)
-	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
-		exit(98);
-	}
-	if (file_to == -1)
-	{
-		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]);
-		exit(99);
-	}
+	dprintf(2, "Error: %s\n", msg);
+	exit(code);
 }
 
 /**
- * main - check the code for Holberton School students.
- * @argc: number of arguments.
- * @argv: arguments vector.
- * Return: Always 0.
+ * copy_file - Copy the content of one file to another.
+ * @from: The source file name.
+ * @to: The destination file name.
+ */
+void copy_file(const char *from, const char *to)
+{
+	int source_fd, dest_fd;
+	char buffer[BUFFER_SIZE];
+	ssize_t nread;
+
+	source_fd = open(from, O_RDONLY);
+	if (source_fd == -1)
+		print_error(98, strerror(errno));
+
+	dest_fd = open(to, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP);
+	if (dest_fd == -1)
+	{
+		close(source_fd);
+		print_error(99, strerror(errno));
+	}
+
+	while ((nread = read(source_fd, buffer, BUFFER_SIZE)) > 0)
+	{
+		if (write(dest_fd, buffer, nread) != nread)
+		{
+			close(source_fd);
+			close(dest_fd);
+			print_error(99, strerror(errno));
+		}
+	}
+
+	if (nread == -1)
+	{
+		close(source_fd);
+		close(dest_fd);
+		print_error(98, strerror(errno));
+	}
+
+	if (close(source_fd) == -1)
+		print_error(100, strerror(errno));
+
+	if (close(dest_fd) == -1)
+		print_error(100, strerror(errno));
+}
+
+/**
+ * main - Entry point of the program.
+ * @argc: The number of command-line arguments.
+ * @argv: An array of command-line arguments.
+ * Return: 0 for success, 97 for incorrect usage, 98 for read error, 99 for write error, 100 for close error.
  */
 int main(int argc, char *argv[])
 {
-	int file_from, file_to, err_close;
-	ssize_t nchars, nwr;
-	char buf[1024];
-
 	if (argc != 3)
 	{
-		dprintf(STDERR_FILENO, "%s\n", "Usage: cp file_from file_to");
-		exit(97);
+		dprintf(2, "Usage: %s file_from file_to\n", argv[0]);
+		return (97);
 	}
 
-	file_from = open(argv[1], O_RDONLY);
-	file_to = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0664);
-	error_file(file_from, file_to, argv);
-
-	nchars = 1024;
-	while (nchars == 1024)
-	{
-		nchars = read(file_from, buf, 1024);
-		if (nchars == -1)
-			error_file(-1, 0, argv);
-		nwr = write(file_to, buf, nchars);
-		if (nwr == -1)
-			error_file(0, -1, argv);
-	}
-
-	err_close = close(file_from);
-	if (err_close == -1)
-	{
-		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", file_from);
-		exit(100);
-	}
-
-	err_close = close(file_to);
-	if (err_close == -1)
-	{
-		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", file_from);
-		exit(100);
-	}
+	copy_file(argv[1], argv[2]);
 	return (0);
 }
+
