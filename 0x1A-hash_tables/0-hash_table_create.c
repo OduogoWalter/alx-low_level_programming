@@ -7,7 +7,7 @@
  *
  * Return: Pointer to the newly created hash table, or NULL on failure
  */
-hash_table_t *hash_table_create(unsigned long int size);
+hash_table_t *hash_table_create(unsigned long int size)
 {
 	hash_table_t *new_table;
 	unsigned long int i;
@@ -22,6 +22,7 @@ hash_table_t *hash_table_create(unsigned long int size);
 	if (new_table->array == NULL)
 	{
 		/* Free the hash table structure on failure */
+		free(new_table);
 		return (NULL);
 	}
 
