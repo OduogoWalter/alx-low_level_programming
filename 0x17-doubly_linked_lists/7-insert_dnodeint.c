@@ -24,7 +24,12 @@ dlistint_t *insert_dnodeint_at_index(dlistint_t **h, unsigned int idx, int n)
 	/* If the index is 0, the new node becomes the new head */
 	if (idx == 0)
 	{
-		return (insert_at_head(h, new_node));
+		new_node->prev = NULL;
+		new_node->next = *h;
+		if (*h != NULL)
+			(*h)->prev = new_node;
+		*h = new_node;
+		return (new_node);
 	}
 
 	 /* Traverse the list to find the node at index-1 */
